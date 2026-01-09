@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Runbook Detail</title>
+    <script src="VSS.SDK.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="styles/hub.css">
+</head>
+<body>
+    <div class="detail-container" role="main">
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a href="#" id="backToList" class="breadcrumb-link">← Runbooks</a>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-current" id="currentRunbookName">Loading...</span>
+        </nav>
+
+        <header class="detail-header">
+            <div class="header-main">
+                <h1 class="detail-title" id="runbookTitle" contenteditable="true" title="Click to edit" aria-label="Runbook title, editable">
+                    Loading...
+                </h1>
+                <div class="header-meta" id="runbookMeta">
+                    <span class="meta-item" id="ownerMeta"></span>
+                    <span class="meta-item" id="datesMeta"></span>
+                    <span class="meta-item" id="tasksMeta"></span>
+                </div>
+            </div>
+            <div class="header-actions" role="toolbar" aria-label="Runbook actions">
+                <button class="btn-icon" id="editRunbookBtn" title="Edit runbook details" aria-label="Edit runbook">
+                    ✏️ Edit
+                </button>
+                <button class="btn-icon" id="exportRunbookBtn" title="Export to Excel" aria-label="Export runbook">
+                    📊 Export
+                </button>
+                <button class="btn-icon" id="archiveRunbookBtn" title="Archive runbook" aria-label="Archive runbook">
+                    📦 Archive
+                </button>
+                <button class="btn-primary" id="addTaskBtn" title="Add new task" aria-label="Add new task">
+                    ➕ Add Task
+                </button>
+            </div>
+        </header>
+
+        <div class="detail-body">
+            <div class="description-section" id="descriptionSection">
+                <h2 class="section-title">Description</h2>
+                <div class="description-text" id="runbookDescription" contenteditable="true" aria-label="Runbook description, editable">
+                    Click to add description...
+                </div>
+            </div>
+
+            <div class="tasks-section">
+                <div class="section-header">
+                    <h2 class="section-title">Tasks</h2>
+                    <div class="section-controls">
+                        <label for="taskSort" class="visually-hidden">Sort tasks</label>
+                        <select id="taskSort" class="filter-select" aria-label="Sort tasks">
+                            <option value="date-asc">Date (Oldest First)</option>
+                            <option value="date-desc">Date (Newest First)</option>
+                            <option value="title">Title (A-Z)</option>
+                            <option value="status">Status</option>
+                        </select>
+                        <button class="btn-secondary btn-sm" id="importTasksBtn" title="Import tasks from Excel">
+                            📥 Import Tasks
+                        </button>
+                        <input type="file" id="importTasksFile" accept=".xlsx,.xls,.csv" style="display: none;" aria-hidden="true">
+                    </div>
+                </div>
+
+                <div class="tasks-list" id="tasksList" role="list" aria-label="Tasks in this runbook">
+                    <!-- Tasks will be rendered here -->
+                </div>
+
+                <div class="empty-tasks" id="emptyTasks" style="display: none;">
+                    <p>No tasks yet. Add your first task to get started.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Form Modal -->
+    <dialog id="taskModal" class="modal" aria-labelledby="taskModalTitle">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="taskModalTitle" class="modal-title">Add Task</h2>
+                <button class="modal-close" id="closeTaskModal" aria-label="Close dialog">✕</button>
+            </div>
+            <form id="taskForm" class="modal-body">
+                <input type="hidden" id="editingTaskId">
+                <div class="form-group">
+                    <label for="taskTitle" class="form-label">Task Title <span class="required" aria-label="required">*</span></label>
+                    <input type="text" id="taskTitle" class="form-input" placeholder="Enter task title" required aria-required="true">
+                </div>
+                <div class="form-group">
+                    <label for="taskOwner" class="form-label">Owner</label>
+                    <select id="taskOwner" class="form-input">
+                        <option value="">Select owner...</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="taskStartDate" class="form-label">Start Date</label>
+                        <input type="date" id="taskStartDate" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="taskEndDate" class="form-label">End Date</label>
+                        <input type="date" id="taskEndDate" class="form-input">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="taskWorkItem" class="form-label">Work Item <span class="required" aria-label="required">*</span></label>
+                    <div class="work-item-input-group">
+                        <input type="number" id="taskWorkItem" class="form-input" placeholder="Work Item ID" required aria-required="true">
+                        <button type="button" class="btn-create-wi" id="createWorkItemBtn" title="Create new work item">
+                            ➕ Create New
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelTaskModal">Cancel</button>
+                <button type="submit" form="taskForm" class="btn-primary" id="saveTask">💾 Save Task</button>
+            </div>
+        </div>
+    </dialog>
+
+    <script src="scripts/audit.js"></script>
+    <script src="scripts/security.js"></script>
+    <script src="scripts/runbook-detail.js"></script>
+</body>
+</html>

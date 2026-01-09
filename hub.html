@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Runbooks</title>
+    <script src="VSS.SDK.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="styles/hub.css">
+</head>
+<body>
+    <script src="scripts/audit.js"></script>
+    <div class="hub-container" role="main">
+        <header class="hub-header">
+            <div class="header-title-section">
+                <h1 class="hub-title">Project Runbooks</h1>
+                <p class="hub-description">Manage deployment runbooks and track tasks across your projects</p>
+            </div>
+            <div class="header-actions" role="toolbar" aria-label="Runbook actions">
+                <button class="btn-outline" id="viewAuditLogBtn" title="View audit log" aria-label="View audit log">
+                    📋 Audit Log
+                </button>
+                <button class="btn-outline" id="manageSecurityBtn" title="Manage security and permissions" aria-label="Manage security" style="display:none;">
+                    🔒 Security
+                </button>
+                <button class="btn-primary" id="createRunbookBtn" title="Create a new runbook" aria-label="Create new runbook">
+                    ➕ New Runbook
+                </button>
+                <button class="btn-secondary" id="importRunbookBtn" title="Import runbooks from Excel" aria-label="Import runbooks">
+                    📥 Import
+                </button>
+                <input type="file" id="importFile" accept=".xlsx,.xls,.csv" style="display: none;" aria-hidden="true">
+            </div>
+        </header>
+
+        <div class="filter-bar">
+            <div class="search-box">
+                <label for="searchInput" class="visually-hidden">Search runbooks</label>
+                <input type="search" id="searchInput" class="search-input" placeholder="🔍 Search runbooks..." aria-label="Search runbooks">
+            </div>
+            <div class="filter-controls">
+                <label for="statusFilter" class="visually-hidden">Filter by status</label>
+                <select id="statusFilter" class="filter-select" aria-label="Filter by status">
+                    <option value="all">All Runbooks</option>
+                    <option value="active">Active Only</option>
+                    <option value="completed">Completed</option>
+                    <option value="archived">Archived</option>
+                </select>
+                <label for="sortSelect" class="visually-hidden">Sort runbooks</label>
+                <select id="sortSelect" class="filter-select" aria-label="Sort runbooks">
+                    <option value="recent">Recently Modified</option>
+                    <option value="name">Name (A-Z)</option>
+                    <option value="created">Date Created</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="runbooks-grid" id="runbooksGrid" role="list" aria-label="Runbooks list">
+            <!-- Runbooks will be rendered here -->
+        </div>
+
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-state-icon">📋</div>
+            <h2>No Runbooks Yet</h2>
+            <p>Create your first deployment runbook to start tracking tasks</p>
+            <button class="btn-primary btn-large" id="createFirstRunbook">
+                ➕ Create Your First Runbook
+            </button>
+        </div>
+    </div>
+
+    <!-- Create/Edit Runbook Modal -->
+    <dialog id="runbookModal" class="modal" aria-labelledby="modalTitle">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Create New Runbook</h2>
+                <button class="modal-close" id="closeModal" aria-label="Close dialog">✕</button>
+            </div>
+            <form id="runbookForm" class="modal-body">
+                <input type="hidden" id="editingRunbookId">
+                <div class="form-group">
+                    <label for="runbookName">Runbook Name: <span class="required" aria-label="required">*</span></label>
+                    <input type="text" id="runbookName" class="form-input" placeholder="e.g., Q1 2026 Production Deployment" required aria-required="true">
+                </div>
+                <div class="form-group">
+                    <label for="runbookDescription">Description:</label>
+                    <textarea id="runbookDescription" class="form-textarea" rows="3" placeholder="Brief description of this runbook..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="runbookOwner">Owner:</label>
+                        <input type="text" id="runbookOwner" class="form-input" placeholder="Runbook owner">
+                    </div>
+                    <div class="form-group">
+                        <label for="runbookTags">Tags:</label>
+                        <input type="text" id="runbookTags" class="form-input" placeholder="deployment, production, etc.">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="runbookStartDate">Start Date:</label>
+                        <input type="date" id="runbookStartDate" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="runbookEndDate">Target Completion:</label>
+                        <input type="date" id="runbookEndDate" class="form-input">
+                    </div>
+                </div>
+            </form>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="cancelModal">Cancel</button>
+                <button type="submit" form="runbookForm" class="btn-primary" id="saveRunbook">💾 Save Runbook</button>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Security Management Modal -->
+    <dialog id="securityModal" class="modal" aria-labelledby="securityModalTitle">
+        <div class="modal-header">
+            <h2 id="securityModalTitle" class="modal-title">Manage Security</h2>
+            <button id="closeSecurityModal" class="btn-icon" aria-label="Close" title="Close">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="security-info">
+                <p><strong>Your Role:</strong> <span id="currentUserRole"></span></p>
+                <p class="security-description">Manage user permissions for runbooks. Assign users to roles to control their access level.</p>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Default Role for New Users</label>
+                <select id="defaultRoleSelect" class="form-input">
+                    <option value="reader">Reader (View only)</option>
+                    <option value="contributor">Contributor (View, edit, delete)</option>
+                </select>
+            </div>
+            <div class="role-section">
+                <h3>👑 Managers</h3>
+                <p class="role-description">Can manage security, create, edit, and delete runbooks</p>
+                <div id="managersList" class="users-list"></div>
+                <button id="addManagerBtn" class="btn-outline btn-sm">+ Add Manager</button>
+            </div>
+            <div class="role-section">
+                <h3>✏️ Contributors</h3>
+                <p class="role-description">Can create, edit, and delete runbooks</p>
+                <div id="contributorsList" class="users-list"></div>
+                <button id="addContributorBtn" class="btn-outline btn-sm">+ Add Contributor</button>
+            </div>
+            <div class="role-section">
+                <h3>👁️ Readers</h3>
+                <p class="role-description">Can only view runbooks</p>
+                <div id="readersList" class="users-list"></div>
+                <button id="addReaderBtn" class="btn-outline btn-sm">+ Add Reader</button>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="closeSecurityModalBtn" class="btn-secondary">Close</button>
+        </div>
+    </dialog>
+
+    <!-- Add User Modal -->
+    <dialog id="addUserModal" class="modal" aria-labelledby="addUserModalTitle">
+        <div class="modal-header">
+            <h2 id="addUserModalTitle" class="modal-title">Add User</h2>
+            <button id="closeAddUserModal" class="btn-icon" aria-label="Close" title="Close">✕</button>
+        </div>
+        <div class="modal-body">
+            <form id="addUserForm">
+                <div class="form-group">
+                    <label for="userIdInput" class="form-label required">User ID or Email</label>
+                    <input type="text" id="userIdInput" class="form-input" required placeholder="Enter user ID or email">
+                    <small class="form-help">Enter the Azure DevOps user ID or email address</small>
+                </div>
+                <input type="hidden" id="targetRole">
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button id="cancelAddUser" class="btn-secondary">Cancel</button>
+            <button id="saveAddUser" class="btn-primary">Add User</button>
+        </div>
+    </dialog>
+
+    <!-- Audit Log Modal -->
+    <dialog id="auditLogModal" class="modal modal-large" aria-labelledby="auditLogModalTitle">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="auditLogModalTitle" class="modal-title">📋 Audit Log</h2>
+                <button id="closeAuditLogModal" class="modal-close" aria-label="Close" title="Close">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="audit-filters">
+                    <select id="auditFilterEntity" class="form-input" style="width: 150px;">
+                        <option value="">All Types</option>
+                        <option value="RUNBOOK">Runbooks</option>
+                        <option value="TASK">Tasks</option>
+                    </select>
+                    <select id="auditFilterAction" class="form-input" style="width: 150px;">
+                        <option value="">All Actions</option>
+                        <option value="CREATE">Created</option>
+                        <option value="UPDATE">Updated</option>
+                        <option value="DELETE">Deleted</option>
+                        <option value="RESTORE">Restored</option>
+                        <option value="ARCHIVE">Archived</option>
+                    </select>
+                    <button id="exportAuditLogBtn" class="btn-secondary">📥 Export CSV</button>
+                </div>
+                <div id="auditLogContent" class="audit-log-list">
+                    <p class="loading">Loading audit log...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="closeAuditLogBtn" class="btn-secondary">Close</button>
+            </div>
+        </div>
+    </dialog>
+
+    <script src="scripts/security.js"></script>
+    <script src="scripts/hub.js"></script>
+</body>
+</html>

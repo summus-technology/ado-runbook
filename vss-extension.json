@@ -1,0 +1,72 @@
+{
+  "manifestVersion": 1,
+  "id": "project-runbook-hub",
+  "version": "2.0.3",
+  "name": "Project Runbooks Hub",
+  "description": "Manage runbooks with tasks, dates, and work item links in Azure Boards",
+  "publisher": "summus-technology-ltd",
+  "categories": ["Azure Boards"],
+  "targets": [
+    {
+      "id": "Microsoft.VisualStudio.Services"
+    }
+  ],
+  "icons": {
+    "default": "images/logo.png"
+  },
+  "content": {
+    "details": {
+      "path": "README.md"
+    }
+  },
+  "contributions": [
+    {
+      "id": "runbooks-hub",
+      "type": "ms.vss-web.hub",
+      "description": "Project Runbooks hub for managing runbooks in azure devops",
+      "targets": [
+        "ms.vss-work-web.work-hub-group"
+      ],
+      "properties": {
+        "name": "Runbooks",
+        "order": 100,
+        "uri": "hub.html",
+        "icon": "images/logo.png"
+      }
+    }
+  ],
+  "scopes": [
+    "vso.work",
+    "vso.work_write"
+  ],
+  "files": [
+    {
+      "path": "README.md",
+      "addressable": true
+    },
+    {
+      "path": "VSS.SDK.min.js",
+      "addressable": true
+    },
+    {
+      "path": "hub.html",
+      "addressable": true
+    },
+    {
+      "path": "runbook-detail.html",
+      "addressable": true
+    },
+    {
+      "path": "scripts",
+      "addressable": true
+    },
+    {
+      "path": "styles",
+      "addressable": true
+    },
+    {
+      "path": "images",
+      "addressable": true
+    }
+  ]
+}

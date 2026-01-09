@@ -1,0 +1,21 @@
+{
+  "name": "project-runbook-widget",
+  "version": "1.0.0",
+  "description": "Azure DevOps extension for tracking Project Runbooks",
+  "main": "scripts/widget.js",
+  "scripts": {
+    "package": "tfx extension create --manifest-globs vss-extension.json",
+    "publish": "tfx extension publish --manifest-globs vss-extension.json --share-with <summus-technologyanization>"
+  },
+  "keywords": [
+    "azure-devops",
+    "widget",
+    "deployment",
+    "tasks"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "tfx-cli": "^0.17.0"
+  }
+}
